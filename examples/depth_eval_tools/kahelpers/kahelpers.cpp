@@ -584,6 +584,8 @@ void detect_charuco(const cv::Mat &img,
             }
             cv::imshow("aruco", img_copy);
             cv::imshow("charuco", img_copy2);
+            cv::imwrite("aruco.png", img_copy);
+            cv::imwrite("charuco.png", img_copy2);
             cv::waitKey(0);
         }
     }
