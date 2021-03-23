@@ -110,7 +110,8 @@ static bool process_mkv(const std::string &passive_ir_mkv,
     std::vector<int> charucoIds_ir;
     std::vector<cv::Point2f> charucoCorners_ir;
 
-    detect_charuco(passive_ir8, board, params, markerIds_ir, markerCorners_ir, charucoIds_ir, charucoCorners_ir, false);
+    detect_charuco(
+        passive_ir8, board, params, markerIds_ir, markerCorners_ir, charucoIds_ir, charucoCorners_ir, save_images);
 
     std::cout << "\n board has " << board->chessboardCorners.size() << " charuco corners";
     std::cout << "\n number of detected corners in ir = " << charucoIds_ir.size();
