@@ -73,6 +73,19 @@ def r_as_matrix(rotation:np.array):
   rmat = np.zeros(shape=(3,3))
   cv2.Rodrigues(rotation, rmat)
   return rmat
+#-------------------------------------------------------------------------------
+def r_as_vector(rotation:np.array):
+  """Convert a rotation matrix to a 3vec rotation array.
+
+  Args:
+    [np.array]: Rotation matrix.
+
+  Returns:
+    rotation (np.array): 3 vector array representing rotation.
+  """
+  rvec = np.zeros(shape=(3,1))
+  cv2.Rodrigues(rotation, rvec)
+  return rvec
 
 #-------------------------------------------------------------------------------
 def read_opencv_calfile(calfile:str) -> Tuple[np.ndarray,
@@ -143,12 +156,19 @@ def write_calibration_blob(calibrations:List[str],
       # RT for the camera used as the origin for all others.
       reshape_r = [1,0,0,0,1,0,0,0,1]
       reshape_t = [0,0,0]
+      reshape_rvec = [0,0,0]
     else:
       reshape_r = rmat_b_to_a.reshape(9, 1).squeeze(1).tolist()
       reshape_t = tvec_b_to_a.squeeze(1).tolist()
+      rvec = r_as_vector(rmat_b_to_a)
+      reshape_rvec = rvec.squeeze(1).tolist()
 
     camera_matrix, dist, img_size = read_opencv_calfile(calibration_file)
-    intrinsics = [camera_matrix[0][2]/img_size[0][0], #Px
+    intrinsics = [camera_matrix[0][2], #Px
+            camera_matrix[1][2], #Py
+            camera_matrix[0][0], #Fx
+            camera_matrix[1][1], #Fy
+            camera_matrix[0][2]/img_size[0][0], #Px
             camera_matrix[1][2]/img_size[1][0], #Py
             camera_matrix[0][0]/img_size[0][0], #Fx
             camera_matrix[1][1]/img_size[1][0], #Fy
@@ -169,6 +189,7 @@ def write_calibration_blob(calibrations:List[str],
                "ModelType":model_type}
 
     extrinsics = {"Rotation":reshape_r, "Translation":reshape_t}
+    extrinsics = {"Rvec": reshape_rvec,"Rotation":reshape_r, "Translation":reshape_t}
     calibration = {"Intrinsics":intrinsics_data,
             "Rt":extrinsics,
             "SensorHeight":img_size[1].tolist(),
@@ -227,6 +248,7 @@ def get_image_points(board:aruco_CharucoBoard,
 #-------------------------------------------------------------------------------
 def detect_markers(img: np.ndarray,
                    template: str,
+                   imagename: str = "",
                    params:detect_params = None) -> Tuple[List[np.ndarray],
                                                          List[np.ndarray],
                                                          aruco_CharucoBoard]:
@@ -265,11 +287,11 @@ def detect_markers(img: np.ndarray,
     if charuco_corners is None:
       charuco_corners = []
       charuco_ids = []
-      warnings.warn("No charuco corners detected in image.")
+      warnings.warn("No charuco corners detected in image. " + imagename)
   else:
     charuco_corners = []
     charuco_ids = []
-    warnings.warn("No charuco corners detected in image.")
+    warnings.warn("No charuco corners detected in image. " + imagename)
 
   return charuco_corners, charuco_ids, board
 
@@ -308,7 +330,7 @@ def detect_markers_many_images(imgnames:List[str], template: str):
   for imgfile in imgnames:
     img = cv2.imread(imgfile, cv2.IMREAD_GRAYSCALE)
     if img is not None:
-      ccorners, cids, board = detect_markers(img, template)
+      ccorners, cids, board = detect_markers(img, template, imgfile)
 
       if len(ccorners) > 3:
         ccorners_all.append(ccorners)
