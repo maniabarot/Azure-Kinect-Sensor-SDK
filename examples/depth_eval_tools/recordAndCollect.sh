@@ -27,7 +27,7 @@ do
 		# capture .mkv for depth and ir comparison
 		./k4arecorder.exe --device $index -c 3072p -d WFOV_2X2BINNED -l 2 $3/$index/mkvs/dp$f.mkv 
 		./k4arecorder.exe --device $index -c 3072p -d PASSIVE_IR -l 2 $3/$index/mkvs/ir$f.mkv 
-	 	#./transformation_eval.exe -i=$3/$index/mkvs/ir$f.mkv -d=$3/$index/mkvs/dp$f.mkv -t=$4 -out=$3/$index -s=1
+	 	./transformation_eval.exe -i=$3/$index/mkvs/ir$f.mkv -d=$3/$index/mkvs/dp$f.mkv -t=$4 -out=$3/$index -s=1
  		[ -f $3/$index/checkered_pattern.png ] && mv $3/$index/checkered_pattern.png $3/$index/mkvs/checkered_pattern$f.png
  		[ -f $3/$index/results.txt ] && mv $3/$index/results.txt $3/$index/transfomation_eval_results$f.txt
 		echo
